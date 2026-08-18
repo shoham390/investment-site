@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>היסטוריית עסקאות — שהם אולריו</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-1: #fcfcfb;
+    --page: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --baseline: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --series-1: #2a78d6;
+    --series-2: #eb6834;
+    --up: #006300;
+    --down: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --surface-1: #1a1a19;
+      --page: #0d0d0d;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --muted: #898781;
+      --grid: #2c2c2a;
+      --baseline: #383835;
+      --border: rgba(255,255,255,0.10);
+      --series-1: #3987e5;
+      --series-2: #d95926;
+      --up: #0ca30c;
+      --down: #e66767;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--page);
+    color: var(--text-primary);
+    padding: 24px 16px 48px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; }
+  header { margin-bottom: 20px; }
+  header h1 { font-size: 26px; font-weight: 700; }
+  .sub { color: var(--text-secondary); font-size: 14px; margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px 16px; }
+  .sub .dot::before { content: "·"; margin-inline-end: 16px; color: var(--muted); }
+  .nav-link {
+    display: inline-block; margin-top: 10px; font-size: 13px; text-decoration: none;
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 999px; padding: 4px 14px; color: var(--text-secondary);
+  }
+  .nav-link:hover { color: var(--text-primary); }
+  .updated-badge {
+    display: inline-block; margin-top: 10px; margin-inline-start: 8px; font-size: 13px;
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 999px; padding: 4px 14px; color: var(--text-secondary);
+  }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 20px 0; }
+  .tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .tile .label { font-size: 13px; color: var(--text-secondary); }
+  .tile .value { font-size: 22px; font-weight: 700; margin-top: 2px; }
+  .tile .hint { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .pos { color: var(--up); }
+  .neg { color: var(--down); }
+  .card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 16px; }
+  .card h2 { font-size: 17px; font-weight: 700; margin-bottom: 12px; }
+  .card h2 .note { font-size: 13px; font-weight: 400; color: var(--muted); margin-inline-start: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: right; font-weight: 600; color: var(--text-secondary); font-size: 13px; border-bottom: 1px solid var(--baseline); padding: 6px 8px; }
+  td { padding: 8px; border-bottom: 1px solid var(--grid); }
+  td.num, th.num { text-align: left; direction: ltr; font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: none; }
+  .sym { font-weight: 700; }
+  .sym small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
+  .side {
+    display: inline-block; font-size: 12px; font-weight: 700;
+    border-radius: 6px; padding: 1px 10px;
+  }
+  .side.buy { background: color-mix(in srgb, var(--series-1) 14%, transparent); color: var(--series-1); }
+  .side.sell { background: color-mix(in srgb, var(--series-2) 16%, transparent); color: var(--series-2); }
+  .status-chip { font-size: 12px; color: var(--muted); }
+  /* timeline */
+  .timeline { position: relative; padding-inline-start: 22px; }
+  .timeline::before {
+    content: ""; position: absolute; inset-inline-start: 6px; top: 6px; bottom: 6px;
+    width: 2px; background: var(--grid); border-radius: 2px;
+  }
+  .t-item { position: relative; padding-bottom: 16px; }
+  .t-item:last-child { padding-bottom: 0; }
+  .t-item::before {
+    content: ""; position: absolute; inset-inline-start: -21px; top: 6px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--series-1); border: 2px solid var(--surface-1);
+  }
+  .t-item .t-month { font-weight: 700; font-size: 14px; }
+  .t-item .t-text { font-size: 13.5px; color: var(--text-secondary); margin-top: 2px; }
+  .callout {
+    font-size: 13px; color: var(--text-secondary);
+    background: var(--page); border: 1px dashed var(--baseline);
+    border-radius: 10px; padding: 10px 14px; margin-top: 12px;
+  }
+  footer { font-size: 12px; color: var(--muted); margin-top: 24px; text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     HISTORY DATA — עדכון מחליף רק את הבלוק הזה.
+     אין לשנות שום דבר אחר בקובץ.
+     ============================================================ -->
+<script id="history-data" type="application/json">
+{
+  "meta": {
+    "updatedHe": "18 באוגוסט 2026",
+    "periodHe": "3 באפריל – 18 באוגוסט 2026",
+    "account": "U24943114",
+    "sourceHe": "API של Interactive Brokers — נתונים ישירות מהחשבון",
+    "detailLevelHe": "פירוט מלא של כל עסקה, כולל תאריך, סוג פקודה ועמלה"
+  },
+  "totals": {
+    "totalBuys": 609.88,
+    "totalSells": 131.21,
+    "realizedPnl": -19.90,
+    "fees": -27.50,
+    "dividends": 0.41
+  },
+  "trades": [
+    { "dateHe": "17 באוג׳ 2026", "symbol": "CAT", "nameHe": "קטרפילר", "side": "buy", "qty": 0.1145, "avgPrice": 872.77, "amount": 99.93, "realized": null, "statusHe": "פוזיציה פתוחה · שוק" },
+    { "dateHe": "17 באוג׳ 2026", "symbol": "SNDK", "nameHe": "סנדיסק", "side": "buy", "qty": 0.0568, "avgPrice": 1760.00, "amount": 99.97, "realized": null, "statusHe": "פוזיציה פתוחה · שוק" },
+    { "dateHe": "13 באוג׳ 2026", "symbol": "AMZN", "nameHe": "אמזון", "side": "sell", "qty": 0.0416, "avgPrice": 266.72, "amount": 11.10, "realized": -3.89, "statusHe": "הפוזיציה נסגרה · שוק" },
+    { "dateHe": "24 ביולי 2026", "symbol": "AXP", "nameHe": "אמריקן אקספרס", "side": "sell", "qty": 0.0863, "avgPrice": 321.58, "amount": 27.75, "realized": -7.31, "statusHe": "הפוזיציה נסגרה · פקודת סטופ" },
+    { "dateHe": "9 ביולי 2026", "symbol": "AXP", "nameHe": "אמריקן אקספרס", "side": "buy", "qty": 0.0863, "avgPrice": 348.38, "amount": 30.07, "realized": null, "statusHe": "שוק" },
+    { "dateHe": "8 ביולי 2026", "symbol": "RKLB", "nameHe": "רוקט לאב", "side": "sell", "qty": 0.5156, "avgPrice": 81.20, "amount": 41.87, "realized": -13.13, "statusHe": "הפוזיציה נסגרה · פקודת סטופ" },
+    { "dateHe": "29 ביוני 2026", "symbol": "RKLB", "nameHe": "רוקט לאב", "side": "buy", "qty": 0.5156, "avgPrice": 96.97, "amount": 50.00, "realized": null, "statusHe": "שוק" },
+    { "dateHe": "29 ביוני 2026", "symbol": "QQQ", "nameHe": "Invesco QQQ — נאסד\"ק 100", "side": "sell", "qty": 0.07, "avgPrice": 721.35, "amount": 50.49, "realized": 4.44, "statusHe": "מכירה חלקית · שוק" },
+    { "dateHe": "24 ביוני 2026", "symbol": "AMZN", "nameHe": "אמזון", "side": "buy", "qty": 0.0416, "avgPrice": 240.15, "amount": 9.99, "realized": null, "statusHe": "שוק" },
+    { "dateHe": "22 באפר׳ 2026", "symbol": "QQQ", "nameHe": "Invesco QQQ — נאסד\"ק 100", "side": "buy", "qty": 0.3062, "avgPrice": 653.07, "amount": 199.97, "realized": null, "statusHe": "שוק" },
+    { "dateHe": "13 באפר׳ 2026", "symbol": "QQQ", "nameHe": "Invesco QQQ — נאסד\"ק 100", "side": "buy", "qty": 0.1968, "avgPrice": 609.49, "amount": 119.95, "realized": null, "statusHe": "קנייה ראשונה בתיק · שוק" }
+  ],
+  "forex": [
+    { "descHe": "13 באוג׳ 2026 — המרת שקלים לדולרים", "detailHe": "נרכשו ‎$175‎ בשער ‎2.9649 ₪‎ לדולר", "amountHe": "‎518.86 ₪ ← $175.00‎" },
+    { "descHe": "20 באפר׳ 2026 — המרת שקלים לדולרים", "detailHe": "נרכשו ‎$194‎ בשער ‎2.9849 ₪‎ לדולר", "amountHe": "‎579.07 ₪ ← $194.00‎" },
+    { "descHe": "9 באפר׳ 2026 — המרת שקלים לדולרים", "detailHe": "הומרו ‎13.73 ₪‎ בשער ‎0.3273‎", "amountHe": "‎13.73 ₪ ← $4.49‎" },
+    { "descHe": "7 באפר׳ 2026 — המרת שקלים לדולרים", "detailHe": "נרכשו ‎$28‎ בשער ‎3.1393 ₪‎ לדולר", "amountHe": "‎87.90 ₪ ← $28.00‎" },
+    { "descHe": "6 באפר׳ 2026 — המרת שקלים לדולרים", "detailHe": "נרכשו ‎$126‎ בשער ‎3.1617 ₪‎ לדולר", "amountHe": "‎398.37 ₪ ← $126.00‎" }
+  ],
+  "deposits": [
+    { "dateHe": "3 באפריל 2026", "typeHe": "הפקדה", "amount": 159.67 },
+    { "dateHe": "20 באפריל 2026", "typeHe": "הפקדה", "amount": 201.01 },
+    { "dateHe": "10 באוגוסט 2026", "typeHe": "הפקדה", "amount": 166.46 }
+  ],
+  "dividends": [
+    { "symbol": "QQQ", "payDateHe": "10 ביולי 2026", "exDateHe": "אקס: 22 ביוני", "qty": 0.503, "perShare": 0.82, "amount": 0.41 }
+  ],
+  "timeline": [
+    { "monthHe": "אפריל 2026", "textHe": "פתיחת החשבון: הפקדות ב-3/4 וב-20/4 (‎$360.68‎ יחד), המרות שקל→דולר, ושתי קניות QQQ — 0.1968 יח׳ ב-13/4 (‎$609.49‎) ו-0.3062 יח׳ ב-22/4 (‎$653.07‎)." },
+    { "monthHe": "מאי 2026", "textHe": "חודש חזק (‎+9.93%‎) ללא עסקאות — התיק מרוכז ב-QQQ בלבד." },
+    { "monthHe": "יוני 2026", "textHe": "24/6: קניית אמזון. 29/6: מכירה חלקית של QQQ ברווח ממומש של ‎$4.44‎ וקניית רוקט לאב באותו יום. אקס-דיבידנד QQQ ב-22/6." },
+    { "monthHe": "יולי 2026", "textHe": "חודש חלש (‎-10.30%‎). 8/7: פקודת סטופ סגרה את רוקט לאב בהפסד ‎$13.13‎. 9/7: קניית אמריקן אקספרס. 24/7: סטופ סגר גם אותה בהפסד ‎$7.31‎. התקבל דיבידנד QQQ ב-10/7." },
+    { "monthHe": "אוגוסט 2026", "textHe": "10/8: הפקדה שלישית (‎$166.46‎). 13/8: המרת ‎$175‎ ומכירת אמזון בהפסד ‎$3.89‎. 17/8: קניית סנדיסק וקטרפילר (~‎$200‎ יחד) — ההרכב הנוכחי של התיק." }
+  ]
+}
+</script>
+
+<div class="wrap">
+  <header>
+    <h1>📜 היסטוריית עסקאות</h1>
+    <div class="sub">
+      <span>Interactive Brokers</span>
+      <span class="dot" id="h-account"></span>
+      <span class="dot" id="h-period"></span>
+    </div>
+    <a class="nav-link" href="investment-dashboard.html">→ חזרה לדשבורד</a>
+    <a class="nav-link" href="daily-brief.html">🧭 תדרוך השקעות</a>
+    <span class="updated-badge" id="h-updated"></span>
+  </header>
+
+  <section class="tiles" id="tiles"></section>
+
+  <section class="card">
+    <h2>כל העסקאות בניירות ערך <span class="note" id="detail-note"></span></h2>
+    <table>
+      <thead><tr>
+        <th>תאריך</th><th>נייר</th><th>פעולה</th><th class="num">כמות</th>
+        <th class="num">מחיר</th><th class="num">סכום</th>
+        <th class="num">רווח/הפסד ממומש</th><th>סטטוס</th>
+      </tr></thead>
+      <tbody id="trades-body"></tbody>
+    </table>
+    <div class="callout">
+      ✅ מחובר ישירות ל-API של Interactive Brokers — כל עסקה מופיעה כאן עם התאריך, סוג הפקודה
+      והרווח/הפסד הממומש שלה, ומתעדכנת אוטומטית בעדכון הבוקר.
+    </div>
+  </section>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="two-col">
+    <section class="card">
+      <h2>הפקדות ומשיכות</h2>
+      <table>
+        <thead><tr><th>תאריך</th><th>סוג</th><th class="num">סכום</th></tr></thead>
+        <tbody id="deposits-body"></tbody>
+      </table>
+    </section>
+    <section class="card">
+      <h2>דיבידנדים</h2>
+      <table>
+        <thead><tr><th>נייר</th><th>תאריך תשלום</th><th class="num">לְיחידה</th><th class="num">סכום</th></tr></thead>
+        <tbody id="dividends-body"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>המרות מט"ח</h2>
+    <table>
+      <thead><tr><th>פעולה</th><th>פירוט</th><th class="num">סכום</th></tr></thead>
+      <tbody id="forex-body"></tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>ציר הזמן של התיק <span class="note">משוחזר מהנתונים החודשיים בדוח</span></h2>
+    <div class="timeline" id="timeline"></div>
+  </section>
+
+  <footer id="footer-note"></footer>
+</div>
+
+<style>@media (max-width: 760px) { #two-col { grid-template-columns: 1fr !important; } }</style>
+
+<script>
+(function () {
+  var D = JSON.parse(document.getElementById('history-data').textContent);
+
+  function fmt$(n) { return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function signed$(n) { return '‎' + (n < 0 ? '-' : '+') + fmt$(n); }
+  function pctClass(n) { return n > 0 ? 'pos' : (n < 0 ? 'neg' : ''); }
+
+  document.getElementById('h-account').textContent = 'חשבון ' + D.meta.account;
+  document.getElementById('h-period').textContent = D.meta.periodHe;
+  document.getElementById('h-updated').textContent = 'עודכן: ' + D.meta.updatedHe;
+  document.getElementById('detail-note').textContent = D.meta.detailLevelHe;
+  document.getElementById('footer-note').textContent =
+    'המקור: ' + D.meta.sourceHe + '. רווח/הפסד ממומש כפי שמדווח על ידי IBKR (כולל עמלות). למטרות מידע בלבד — אינו ייעוץ השקעות.';
+
+  var t = D.totals;
+  var tiles = [
+    { label: 'סך קניות', value: fmt$(t.totalBuys), hint: 'ניירות ערך, כל התקופה' },
+    { label: 'סך מכירות', value: fmt$(t.totalSells), hint: 'כולל מכירות חלקיות' },
+    { label: 'רווח/הפסד ממומש', value: signed$(t.realizedPnl), cls: pctClass(t.realizedPnl), hint: 'על פוזיציות שנסגרו' },
+    { label: 'עמלות ועלויות', value: signed$(t.fees), cls: pctClass(t.fees), hint: 'מצטבר מאז הפתיחה' },
+    { label: 'דיבידנדים', value: fmt$(t.dividends), cls: 'pos', hint: 'התקבלו בתקופה' }
+  ];
+  document.getElementById('tiles').innerHTML = tiles.map(function (x) {
+    return '<div class="tile"><div class="label">' + x.label + '</div>' +
+      '<div class="value ' + (x.cls || '') + '">' + x.value + '</div>' +
+      '<div class="hint">' + x.hint + '</div></div>';
+  }).join('');
+
+  document.getElementById('trades-body').innerHTML = D.trades.map(function (tr) {
+    var isBuy = tr.side === 'buy';
+    return '<tr>' +
+      '<td style="white-space:nowrap;font-size:13px">' + (tr.dateHe || '—') + '</td>' +
+      '<td class="sym">' + tr.symbol + '<small>' + tr.nameHe + '</small></td>' +
+      '<td><span class="side ' + tr.side + '">' + (isBuy ? 'קנייה' : 'מכירה') + '</span></td>' +
+      '<td class="num">' + tr.qty + '</td>' +
+      '<td class="num">' + fmt$(tr.avgPrice) + '</td>' +
+      '<td class="num">' + fmt$(tr.amount) + '</td>' +
+      '<td class="num ' + (tr.realized === null ? '' : pctClass(tr.realized)) + '">' +
+        (tr.realized === null ? '—' : signed$(tr.realized)) + '</td>' +
+      '<td class="status-chip">' + tr.statusHe + '</td>' +
+      '</tr>';
+  }).join('');
+
+  document.getElementById('deposits-body').innerHTML = D.deposits.map(function (d) {
+    return '<tr><td>' + d.dateHe + '</td><td>' + d.typeHe + '</td>' +
+      '<td class="num pos">' + fmt$(d.amount) + '</td></tr>';
+  }).join('') +
+  '<tr><td colspan="2" style="font-weight:700">סה"כ</td><td class="num" style="font-weight:700">' +
+    fmt$(D.deposits.reduce(function (a, d) { return a + d.amount; }, 0)) + '</td></tr>';
+
+  document.getElementById('dividends-body').innerHTML = D.dividends.map(function (d) {
+    return '<tr><td class="sym">' + d.symbol + '</td>' +
+      '<td>' + d.payDateHe + '<small style="display:block;color:var(--muted);font-size:12px">' + d.exDateHe + '</small></td>' +
+      '<td class="num">' + fmt$(d.perShare) + '</td>' +
+      '<td class="num pos">' + fmt$(d.amount) + '</td></tr>';
+  }).join('');
+
+  document.getElementById('forex-body').innerHTML = D.forex.map(function (f) {
+    return '<tr><td style="font-weight:600">' + f.descHe + '</td>' +
+      '<td style="font-size:13px;color:var(--text-secondary)">' + f.detailHe + '</td>' +
+      '<td class="num">' + f.amountHe + '</td></tr>';
+  }).join('');
+
+  document.getElementById('timeline').innerHTML = D.timeline.map(function (m) {
+    return '<div class="t-item"><div class="t-month">' + m.monthHe + '</div>' +
+      '<div class="t-text">' + m.textHe + '</div></div>';
+  }).join('');
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>תיק ההשקעות שלי — שהם אולריו</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-1: #fcfcfb;
+    --page: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --baseline: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --series-1: #2a78d6;
+    --series-2: #eb6834;
+    --series-3: #1baf7a;
+    --series-4: #eda100;
+    --up: #006300;
+    --down: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --surface-1: #1a1a19;
+      --page: #0d0d0d;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --muted: #898781;
+      --grid: #2c2c2a;
+      --baseline: #383835;
+      --border: rgba(255,255,255,0.10);
+      --series-1: #3987e5;
+      --series-2: #d95926;
+      --series-3: #199e70;
+      --series-4: #c98500;
+      --up: #0ca30c;
+      --down: #e66767;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--page);
+    color: var(--text-primary);
+    padding: 24px 16px 48px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; }
+  header { margin-bottom: 20px; }
+  header h1 { font-size: 26px; font-weight: 700; }
+  .sub { color: var(--text-secondary); font-size: 14px; margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px 16px; }
+  .sub .dot::before { content: "·"; margin-inline-end: 16px; color: var(--muted); }
+  .updated-badge {
+    display: inline-block; margin-top: 8px; font-size: 13px;
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 999px; padding: 3px 12px; color: var(--text-secondary);
+  }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 20px 0; }
+  .tile {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px;
+  }
+  .tile .label { font-size: 13px; color: var(--text-secondary); }
+  .tile .value { font-size: 24px; font-weight: 700; margin-top: 2px; }
+  .tile .hint { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .pos { color: var(--up); }
+  .neg { color: var(--down); }
+  .card {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 20px; margin-bottom: 16px;
+  }
+  .card h2 { font-size: 17px; font-weight: 700; margin-bottom: 12px; }
+  .card h2 .note { font-size: 13px; font-weight: 400; color: var(--muted); margin-inline-start: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } }
+  /* allocation stacked bar */
+  .alloc-bar { display: flex; height: 26px; border-radius: 6px; overflow: hidden; gap: 2px; background: var(--page); }
+  .alloc-bar div { height: 100%; }
+  .alloc-legend { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 10px; font-size: 13px; color: var(--text-secondary); }
+  .alloc-legend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-inline-end: 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: right; font-weight: 600; color: var(--text-secondary); font-size: 13px;
+       border-bottom: 1px solid var(--baseline); padding: 6px 8px; }
+  td { padding: 8px; border-bottom: 1px solid var(--grid); }
+  td.num, th.num { text-align: left; direction: ltr; font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: none; }
+  .sym { font-weight: 700; }
+  .sym small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
+  .chart-box { direction: ltr; }
+  svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .news-item { padding: 10px 0; border-bottom: 1px solid var(--grid); }
+  .news-item:last-child { border-bottom: none; }
+  .news-item .tag {
+    display: inline-block; font-size: 12px; font-weight: 700; direction: ltr;
+    background: var(--page); border: 1px solid var(--border); border-radius: 6px;
+    padding: 1px 8px; margin-inline-end: 8px; color: var(--text-secondary);
+  }
+  .news-item .title { font-size: 14px; }
+  .news-item .meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .summary-text { font-size: 14px; color: var(--text-secondary); }
+  footer { font-size: 12px; color: var(--muted); margin-top: 24px; text-align: center; }
+  #tooltip {
+    position: fixed; pointer-events: none; z-index: 10; display: none;
+    background: var(--text-primary); color: var(--surface-1);
+    font-size: 12px; padding: 5px 9px; border-radius: 6px; direction: rtl;
+    max-width: 220px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     DASHBOARD DATA — עדכון יומי מחליף רק את הבלוק הזה.
+     אין לשנות שום דבר אחר בקובץ.
+     ============================================================ -->
+<script id="dashboard-data" type="application/json">
+{
+  "meta": {
+    "updatedHe": "18 באוגוסט 2026, 16:51 (שעון ישראל) — נתונים חיים מ-IBKR",
+    "account": "U24943114",
+    "broker": "Interactive Brokers",
+    "inceptionHe": "3 באפריל 2026",
+    "usdIls": 2.97
+  },
+  "summary": {
+    "nav": 513.35,
+    "cumReturnPct": -3.05,
+    "mtdReturnPct": 0.94,
+    "unrealizedPnl": 17.84,
+    "deposits": 527.14,
+    "dividends": 0.41,
+    "maxDrawdownPct": 11.95
+  },
+  "allocation": [
+    { "labelHe": "QQQ — נאסד\"ק 100", "value": 311.72, "weight": 60.72 },
+    { "labelHe": "SNDK — סנדיסק", "value": 94.74, "weight": 18.45 },
+    { "labelHe": "CAT — קטרפילר", "value": 97.64, "weight": 19.02 },
+    { "labelHe": "מזומן", "value": 9.25, "weight": 1.80 }
+  ],
+  "holdings": [
+    { "symbol": "QQQ", "nameHe": "Invesco QQQ — מדד נאסד\"ק 100", "sectorHe": "קרן סל רחבה", "qty": 0.433, "price": 719.91, "dayChangePct": -1.36, "value": 311.72, "weight": 60.72, "costBasis": 281.36, "unrealizedPnl": 30.36 },
+    { "symbol": "SNDK", "nameHe": "סנדיסק", "sectorHe": "טכנולוגיה — זיכרון", "qty": 0.0568, "price": 1667.87, "dayChangePct": -6.66, "value": 94.74, "weight": 18.45, "costBasis": 102.47, "unrealizedPnl": -7.73 },
+    { "symbol": "CAT", "nameHe": "קטרפילר", "sectorHe": "תעשייה", "qty": 0.1145, "price": 852.76, "dayChangePct": -3.28, "value": 97.64, "weight": 19.02, "costBasis": 102.43, "unrealizedPnl": -4.79 }
+  ],
+  "cash": [
+    { "labelHe": "דולר ארה\"ב (USD)", "value": 9.25 }
+  ],
+  "watchlist": [
+    { "symbol": "NVDA", "nameHe": "אנבידיה", "price": 220.05, "dayChangePct": -2.20, "marketCapHe": "5.3 טריליון $", "pe": 33.7, "noteHe": "יורדת עם עליית תשואות האג\"ח; BofA עדיין רואה אפסייד משמעותי" },
+    { "symbol": "MU", "nameHe": "מיקרון", "price": 966.18, "dayChangePct": -4.50, "marketCapHe": "1.09 טריליון $", "pe": 21.8, "noteHe": "מניות הזיכרון מובילות את הירידות אחרי הראלי החד של אתמול" },
+    { "symbol": "AVGO", "nameHe": "ברודקום", "price": 380.00, "dayChangePct": -3.17, "marketCapHe": "1.81 טריליון $", "pe": 63.2, "noteHe": "הלחץ נמשך אחרי הדיווח על פגיעות אבטחה ב-VMware vCenter" },
+    { "symbol": "AMD", "nameHe": "AMD", "price": 485.80, "dayChangePct": -3.99, "marketCapHe": "793 מיליארד $", "pe": 124.0, "noteHe": "יורדת עם הסקטור; קונצנזוס האנליסטים נותר חיובי (יעד ממוצע ‎$612‎)" },
+    { "symbol": "RKLB", "nameHe": "רוקט לאב", "price": 77.87, "dayChangePct": -5.13, "marketCapHe": "46.6 מיליארד $", "pe": null, "noteHe": "מימושים אחרי השיגור המוצלח; רכישת אירידיום ממשיכה להתקדם" }
+  ],
+  "navHistory": [
+    { "monthHe": "אפר׳", "nav": 360.81 },
+    { "monthHe": "מאי", "nav": 396.64 },
+    { "monthHe": "יונ׳", "nav": 389.36 },
+    { "monthHe": "יול׳", "nav": 349.25 },
+    { "monthHe": "אוג׳", "nav": 513.35 }
+  ],
+  "monthlyReturns": [
+    { "monthHe": "אפר׳", "portfolio": -0.77, "spx": 9.57 },
+    { "monthHe": "מאי", "portfolio": 9.93, "spx": 5.26 },
+    { "monthHe": "יונ׳", "portfolio": -1.84, "spx": -0.95 },
+    { "monthHe": "יול׳", "portfolio": -10.30, "spx": -0.06 },
+    { "monthHe": "אוג׳", "portfolio": 0.94, "spx": 3.47 }
+  ],
+  "marketSummaryHe": "יום אדום בשווקים: עלייה בתשואות האג\"ח הארוכות והמתיחות הגיאופוליטית סביב ארה\"ב ואיראן מכבידות על מניות הטכנולוגיה. מניות הזיכרון, שזינקו אתמול, מובילות את הירידות — SNDK צונחת כ-6.7% ומיקרון כ-4.5%. התיק יורד היום כ-2.7%, בעיקר בגלל המשקל הגבוה של סנדיסק וקטרפילר (‎-3.3%‎). QQQ מחזיק מעמד יחסית עם ירידה של כ-1.4% בלבד.",
+  "news": [
+    { "symbol": "SNDK", "titleHe": "מורגן סטנלי: SNDK היא מניית ה-AI שהמוסדיים עוד לא מחזיקים — לעומת NVDA הצפופה", "sourceHe": "TipRanks", "whenHe": "היום" },
+    { "symbol": "SNDK", "titleHe": "מניות הזיכרון מתקררות בחדות אחרי הראלי — SNDK ו-MU יורדות", "sourceHe": "TipRanks", "whenHe": "היום" },
+    { "symbol": "CAT", "titleHe": "רבעון שיא של 20.5 מיליארד $ — בום הדאטה-סנטרים של ה-AI מזניק את הביקוש לציוד חשמל", "sourceHe": "StockStory", "whenHe": "4 באוגוסט" },
+    { "symbol": "CAT", "titleHe": "המניה סמוך לשיא כל הזמנים — האם נותר עוד מקום לעלות?", "sourceHe": "Barchart", "whenHe": "השבוע" },
+    { "symbol": "QQQ", "titleHe": "QQQ ו-SPY מאבדים גובה על רקע המתיחות בין ארה\"ב לאיראן ועליית התשואות", "sourceHe": "TipRanks", "whenHe": "היום" },
+    { "symbol": "QQQ", "titleHe": "הקרן עלתה יותר מ-19% מתחילת השנה; אנליסטים בוחנים את פוטנציאל ההמשך", "sourceHe": "TipRanks", "whenHe": "אתמול" }
+  ]
+}
+</script>
+
+<div class="wrap">
+  <header>
+    <h1>💼 תיק ההשקעות שלי</h1>
+    <div class="sub">
+      <span id="h-broker"></span>
+      <span class="dot" id="h-account"></span>
+      <span class="dot" id="h-inception"></span>
+      <span class="dot" id="h-usdils"></span>
+    </div>
+    <span class="updated-badge" id="h-updated"></span>
+    <a class="updated-badge" style="text-decoration:none" href="daily-brief.html">🧭 תדרוך השקעות ←</a>
+    <a class="updated-badge" style="text-decoration:none" href="trade-history.html">📜 היסטוריית עסקאות ←</a>
+  </header>
+
+  <section class="tiles" id="tiles"></section>
+
+  <section class="card">
+    <h2>הקצאת התיק <span class="note">לפי שווי שוק</span></h2>
+    <div class="alloc-bar" id="alloc-bar"></div>
+    <div class="alloc-legend" id="alloc-legend"></div>
+  </section>
+
+  <div class="grid-2">
+    <section class="card">
+      <h2>שווי התיק (NAV) <span class="note">דולר, סוף חודש</span></h2>
+      <div class="chart-box" id="nav-chart"></div>
+    </section>
+    <section class="card">
+      <h2>תשואה חודשית <span class="note">התיק מול S&amp;P 500</span></h2>
+      <div class="chart-box" id="returns-chart"></div>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>החזקות נוכחיות</h2>
+    <table>
+      <thead><tr>
+        <th>נייר</th><th class="num">כמות</th><th class="num">מחיר</th>
+        <th class="num">שינוי יומי</th><th class="num">שווי</th>
+        <th class="num">משקל</th><th class="num">רווח/הפסד</th>
+      </tr></thead>
+      <tbody id="holdings-body"></tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>רשימת מעקב</h2>
+    <table>
+      <thead><tr>
+        <th>נייר</th><th class="num">מחיר</th><th class="num">שינוי יומי</th>
+        <th class="num">שווי שוק</th><th class="num">P/E</th><th>מה חדש</th>
+      </tr></thead>
+      <tbody id="watchlist-body"></tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>תמונת שוק — סיכום בוקר</h2>
+    <p class="summary-text" id="market-summary"></p>
+  </section>
+
+  <section class="card">
+    <h2>חדשות על ההחזקות שלי</h2>
+    <div id="news-list"></div>
+  </section>
+
+  <footer>
+    הנתונים מבוססים על דוח PortfolioAnalyst של Interactive Brokers ומקורות שוק פומביים.
+    למטרות מידע בלבד — אינו ייעוץ השקעות.
+  </footer>
+</div>
+
+<div id="tooltip"></div>
+
+<script>
+(function () {
+  var D = JSON.parse(document.getElementById('dashboard-data').textContent);
+  var css = getComputedStyle(document.documentElement);
+  function v(name) { return css.getPropertyValue(name).trim(); }
+
+  function fmt$(n) { return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function fmtPct(n, signed) {
+    var s = (signed && n > 0 ? '+' : '') + n.toFixed(2) + '%';
+    return '‎' + s; // LRM so the sign renders correctly in RTL context
+  }
+  function pctClass(n) { return n > 0 ? 'pos' : (n < 0 ? 'neg' : ''); }
+
+  /* header */
+  document.getElementById('h-broker').textContent = D.meta.broker;
+  document.getElementById('h-account').textContent = 'חשבון ' + D.meta.account;
+  document.getElementById('h-inception').textContent = 'פעיל מאז ' + D.meta.inceptionHe;
+  document.getElementById('h-usdils').textContent = 'דולר/שקל: ' + D.meta.usdIls.toFixed(2) + ' ₪';
+  document.getElementById('h-updated').textContent = 'עודכן לאחרונה: ' + D.meta.updatedHe;
+
+  /* stat tiles */
+  var s = D.summary;
+  var tiles = [
+    { label: 'שווי התיק', value: fmt$(s.nav), hint: '≈ ' + (s.nav * D.meta.usdIls).toFixed(0) + ' ₪' },
+    { label: 'תשואה מצטברת', value: fmtPct(s.cumReturnPct, true), cls: pctClass(s.cumReturnPct), hint: 'מאז ' + D.meta.inceptionHe },
+    { label: 'תשואת אוגוסט', value: fmtPct(s.mtdReturnPct, true), cls: pctClass(s.mtdReturnPct), hint: 'מתחילת החודש' },
+    { label: 'רווח לא ממומש', value: fmt$(s.unrealizedPnl), cls: pctClass(s.unrealizedPnl), hint: 'על פוזיציות פתוחות' },
+    { label: 'סך הפקדות', value: fmt$(s.deposits), hint: 'דיבידנדים: ' + fmt$(s.dividends) }
+  ];
+  document.getElementById('tiles').innerHTML = tiles.map(function (t) {
+    return '<div class="tile"><div class="label">' + t.label + '</div>' +
+      '<div class="value ' + (t.cls || '') + '">' + t.value + '</div>' +
+      '<div class="hint">' + t.hint + '</div></div>';
+  }).join('');
+
+  /* allocation stacked bar */
+  var seriesVars = ['--series-1', '--series-2', '--series-3', '--series-4'];
+  var bar = document.getElementById('alloc-bar');
+  var legend = document.getElementById('alloc-legend');
+  D.allocation.forEach(function (a, i) {
+    var seg = document.createElement('div');
+    var color = v(seriesVars[i % seriesVars.length]);
+    seg.style.width = a.weight + '%';
+    seg.style.background = color;
+    seg.setAttribute('data-tip', a.labelHe + ' — ' + fmt$(a.value) + ' (' + a.weight.toFixed(1) + '%)');
+    bar.appendChild(seg);
+    var li = document.createElement('span');
+    li.innerHTML = '<span class="sw" style="background:' + color + '"></span>' +
+      a.labelHe + ' — ' + a.weight.toFixed(1) + '%';
+    legend.appendChild(li);
+  });
+
+  /* tooltip */
+  var tip = document.getElementById('tooltip');
+  document.addEventListener('mousemove', function (e) {
+    var el = e.target.closest('[data-tip]');
+    if (el) {
+      tip.textContent = el.getAttribute('data-tip');
+      tip.style.display = 'block';
+      var x = Math.min(e.clientX + 12, window.innerWidth - tip.offsetWidth - 8);
+      tip.style.left = x + 'px';
+      tip.style.top = (e.clientY + 14) + 'px';
+    } else {
+      tip.style.display = 'none';
+    }
+  });
+
+  /* NAV line chart (SVG) */
+  (function () {
+    var W = 460, H = 220, pad = { t: 16, r: 16, b: 28, l: 44 };
+    var data = D.navHistory;
+    var min = Math.min.apply(null, data.map(function (d) { return d.nav; }));
+    var max = Math.max.apply(null, data.map(function (d) { return d.nav; }));
+    var lo = Math.floor(min / 50) * 50 - 50, hi = Math.ceil(max / 50) * 50;
+    function X(i) { return pad.l + i * (W - pad.l - pad.r) / (data.length - 1); }
+    function Y(val) { return pad.t + (hi - val) / (hi - lo) * (H - pad.t - pad.b); }
+    var grid = '', labels = '';
+    for (var g = lo; g <= hi; g += 50) {
+      grid += '<line x1="' + pad.l + '" x2="' + (W - pad.r) + '" y1="' + Y(g) + '" y2="' + Y(g) +
+        '" stroke="' + v('--grid') + '" stroke-width="1"/>';
+      labels += '<text x="' + (pad.l - 8) + '" y="' + (Y(g) + 4) + '" text-anchor="end" font-size="11" fill="' + v('--muted') + '">' + g + '</text>';
+    }
+    var path = data.map(function (d, i) { return (i ? 'L' : 'M') + X(i) + ',' + Y(d.nav); }).join(' ');
+    var dots = data.map(function (d, i) {
+      return '<circle cx="' + X(i) + '" cy="' + Y(d.nav) + '" r="4.5" fill="' + v('--series-1') +
+        '" stroke="' + v('--surface-1') + '" stroke-width="2" data-tip="' + d.monthHe + ': ' + fmt$(d.nav) + '"/>';
+    }).join('');
+    var xlabels = data.map(function (d, i) {
+      return '<text x="' + X(i) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="11" fill="' + v('--muted') + '">' + d.monthHe + '</text>';
+    }).join('');
+    var last = data[data.length - 1];
+    var lastLabel = '<text x="' + (X(data.length - 1) - 8) + '" y="' + (Y(last.nav) - 10) +
+      '" text-anchor="end" font-size="12" font-weight="600" fill="' + v('--text-primary') + '">' + fmt$(last.nav) + '</text>';
+    document.getElementById('nav-chart').innerHTML =
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="שווי התיק לפי חודש">' +
+      grid + labels +
+      '<path d="' + path + '" fill="none" stroke="' + v('--series-1') + '" stroke-width="2" stroke-linejoin="round"/>' +
+      dots + xlabels + lastLabel + '</svg>';
+  })();
+
+  /* monthly returns grouped bars (SVG) */
+  (function () {
+    var W = 460, H = 220, pad = { t: 16, r: 16, b: 42, l: 40 };
+    var data = D.monthlyReturns;
+    var vals = [];
+    data.forEach(function (d) { vals.push(d.portfolio, d.spx); });
+    var lo = Math.floor(Math.min.apply(null, vals.concat([0])) / 5) * 5;
+    var hi = Math.ceil(Math.max.apply(null, vals.concat([0])) / 5) * 5;
+    function Y(val) { return pad.t + (hi - val) / (hi - lo) * (H - pad.t - pad.b); }
+    var groupW = (W - pad.l - pad.r) / data.length;
+    var barW = Math.min(22, groupW / 2 - 6);
+    var grid = '', labels = '';
+    for (var g = lo; g <= hi; g += 5) {
+      grid += '<line x1="' + pad.l + '" x2="' + (W - pad.r) + '" y1="' + Y(g) + '" y2="' + Y(g) +
+        '" stroke="' + (g === 0 ? v('--baseline') : v('--grid')) + '" stroke-width="1"/>';
+      labels += '<text x="' + (pad.l - 6) + '" y="' + (Y(g) + 4) + '" text-anchor="end" font-size="11" fill="' + v('--muted') + '">' + g + '%</text>';
+    }
+    var bars = '', xlabels = '';
+    data.forEach(function (d, i) {
+      var cx = pad.l + groupW * i + groupW / 2;
+      [['portfolio', v('--series-1'), 'התיק שלי'], ['spx', v('--series-2'), 'S&P 500']].forEach(function (sd, j) {
+        var val = d[sd[0]];
+        var x = cx - barW - 1 + j * (barW + 2);
+        var y0 = Y(0), y1 = Y(val);
+        var top = Math.min(y0, y1), h = Math.max(Math.abs(y0 - y1), 1);
+        var rTop = val >= 0 ? 4 : 0, rBot = val < 0 ? 4 : 0;
+        bars += '<path d="M' + x + ',' + (top + rTop) +
+          ' q0,-' + rTop + ' ' + rTop + ',-' + rTop + ' h' + (barW - 2 * rTop) + ' q' + rTop + ',0 ' + rTop + ',' + rTop +
+          ' v' + (h - rTop - rBot) +
+          ' q0,' + rBot + ' -' + rBot + ',' + rBot + ' h-' + (barW - 2 * rBot) + ' q-' + rBot + ',0 -' + rBot + ',-' + rBot + ' z"' +
+          ' fill="' + sd[1] + '" data-tip="' + d.monthHe + ' — ' + sd[2] + ': ' + fmtPct(val, true) + '"/>';
+      });
+      xlabels += '<text x="' + cx + '" y="' + (H - 22) + '" text-anchor="middle" font-size="11" fill="' + v('--muted') + '">' + d.monthHe + '</text>';
+    });
+    var legend =
+      '<rect x="' + pad.l + '" y="' + (H - 12) + '" width="10" height="10" rx="3" fill="' + v('--series-1') + '"/>' +
+      '<text x="' + (pad.l + 15) + '" y="' + (H - 3) + '" font-size="11" fill="' + v('--text-secondary') + '">התיק שלי</text>' +
+      '<rect x="' + (pad.l + 85) + '" y="' + (H - 12) + '" width="10" height="10" rx="3" fill="' + v('--series-2') + '"/>' +
+      '<text x="' + (pad.l + 100) + '" y="' + (H - 3) + '" font-size="11" fill="' + v('--text-secondary') + '">S&amp;P 500</text>';
+    document.getElementById('returns-chart').innerHTML =
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="תשואה חודשית מול מדד">' +
+      grid + labels + bars + xlabels + legend + '</svg>';
+  })();
+
+  /* holdings table */
+  var hb = document.getElementById('holdings-body');
+  hb.innerHTML = D.holdings.map(function (h) {
+    return '<tr>' +
+      '<td class="sym">' + h.symbol + '<small>' + h.nameHe + ' · ' + h.sectorHe + '</small></td>' +
+      '<td class="num">' + h.qty + '</td>' +
+      '<td class="num">' + fmt$(h.price) + '</td>' +
+      '<td class="num ' + pctClass(h.dayChangePct) + '">' + fmtPct(h.dayChangePct, true) + '</td>' +
+      '<td class="num">' + fmt$(h.value) + '</td>' +
+      '<td class="num">' + h.weight.toFixed(1) + '%</td>' +
+      '<td class="num ' + pctClass(h.unrealizedPnl) + '">' + fmt$(h.unrealizedPnl) + '</td>' +
+      '</tr>';
+  }).join('') +
+  '<tr><td class="sym">מזומן<small>' + D.cash.map(function (c) { return c.labelHe; }).join(' + ') + '</small></td>' +
+  '<td class="num">—</td><td class="num">—</td><td class="num">—</td>' +
+  '<td class="num">' + fmt$(D.cash.reduce(function (a, c) { return a + c.value; }, 0)) + '</td>' +
+  '<td class="num">' + (100 - D.holdings.reduce(function (a, h) { return a + h.weight; }, 0)).toFixed(1) + '%</td>' +
+  '<td class="num">—</td></tr>';
+
+  /* watchlist table */
+  document.getElementById('watchlist-body').innerHTML = D.watchlist.map(function (w) {
+    return '<tr>' +
+      '<td class="sym">' + w.symbol + '<small>' + w.nameHe + '</small></td>' +
+      '<td class="num">' + fmt$(w.price) + '</td>' +
+      '<td class="num ' + pctClass(w.dayChangePct) + '">' + fmtPct(w.dayChangePct, true) + '</td>' +
+      '<td class="num" style="direction:rtl;text-align:left">' + w.marketCapHe + '</td>' +
+      '<td class="num">' + (w.pe === null ? '—' : w.pe.toFixed(1)) + '</td>' +
+      '<td style="font-size:13px;color:var(--text-secondary)">' + w.noteHe + '</td>' +
+      '</tr>';
+  }).join('');
+
+  /* market summary + news */
+  document.getElementById('market-summary').textContent = D.marketSummaryHe;
+  document.getElementById('news-list').innerHTML = D.news.map(function (n) {
+    return '<div class="news-item">' +
+      '<span class="tag">' + n.symbol + '</span>' +
+      '<span class="title">' + n.titleHe + '</span>' +
+      '<div class="meta">' + n.sourceHe + ' · ' + n.whenHe + '</div>' +
+      '</div>';
+  }).join('');
+})();
+</script>
+</body>
+</html>

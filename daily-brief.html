@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>תדרוך השקעות — שהם אולריו</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-1: #fcfcfb;
+    --page: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --baseline: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --series-1: #2a78d6;
+    --series-2: #eb6834;
+    --up: #006300;
+    --down: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --surface-1: #1a1a19;
+      --page: #0d0d0d;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --muted: #898781;
+      --grid: #2c2c2a;
+      --baseline: #383835;
+      --border: rgba(255,255,255,0.10);
+      --series-1: #3987e5;
+      --series-2: #d95926;
+      --up: #0ca30c;
+      --down: #e66767;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--page);
+    color: var(--text-primary);
+    padding: 24px 16px 48px;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  header { margin-bottom: 18px; }
+  header h1 { font-size: 26px; font-weight: 700; }
+  .sub { color: var(--text-secondary); font-size: 14px; margin-top: 4px; }
+  .badge, .nav-link {
+    display: inline-block; margin-top: 10px; font-size: 13px; text-decoration: none;
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 999px; padding: 4px 14px; color: var(--text-secondary);
+    margin-inline-end: 8px;
+  }
+  .nav-link:hover { color: var(--text-primary); }
+  .badge.type { font-weight: 700; color: var(--series-1); }
+  .pos { color: var(--up); }
+  .neg { color: var(--down); }
+  .card {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 20px; margin-bottom: 16px;
+  }
+  .card h2 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+  .card h2 .note { font-size: 13px; font-weight: 400; color: var(--muted); margin-inline-start: 8px; }
+  .lead-card { border-inline-start: 4px solid var(--series-1); }
+  .lead-text { font-size: 15px; }
+  .snapshot { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .chip {
+    font-size: 13px; background: var(--page); border: 1px solid var(--border);
+    border-radius: 8px; padding: 4px 12px; color: var(--text-secondary);
+  }
+  .chip b { color: var(--text-primary); }
+  /* holding analysis card */
+  .h-card { margin-bottom: 14px; }
+  .h-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 12px; margin-bottom: 4px; }
+  .h-head .sym { font-size: 17px; font-weight: 700; direction: ltr; }
+  .h-head .nm { font-size: 14px; color: var(--text-secondary); }
+  .h-head .w {
+    font-size: 12px; font-weight: 700; color: var(--series-1);
+    background: color-mix(in srgb, var(--series-1) 10%, transparent);
+    border-radius: 6px; padding: 1px 8px;
+  }
+  .h-pos { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .h-block { margin-bottom: 8px; font-size: 14px; }
+  .h-block .lbl { font-weight: 700; font-size: 13px; }
+  .h-block .lbl.what { color: var(--text-secondary); }
+  .h-block .lbl.impact { color: var(--series-2); }
+  .h-block .lbl.watch { color: var(--series-1); }
+  .h-block p { color: var(--text-secondary); margin-top: 1px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: right; font-weight: 600; color: var(--text-secondary); font-size: 13px;
+       border-bottom: 1px solid var(--baseline); padding: 6px 8px; }
+  td { padding: 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td.date { white-space: nowrap; font-weight: 700; font-size: 13px; }
+  td.ev-sym { direction: ltr; text-align: right; font-weight: 700; font-size: 13px; }
+  .archive-item { padding: 9px 0; border-bottom: 1px solid var(--grid); font-size: 13.5px; }
+  .archive-item:last-child { border-bottom: none; }
+  .archive-item .d { font-weight: 700; margin-inline-end: 8px; }
+  .archive-item .t {
+    font-size: 12px; color: var(--series-1); font-weight: 700;
+    margin-inline-end: 8px;
+  }
+  .archive-item .s { color: var(--text-secondary); }
+  footer { font-size: 12px; color: var(--muted); margin-top: 24px; text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     BRIEF DATA — עדכון מחליף רק את הבלוק הזה.
+     אין לשנות שום דבר אחר בקובץ.
+     ============================================================ -->
+<script id="brief-data" type="application/json">
+{
+  "meta": {
+    "updatedHe": "18 באוגוסט 2026, ערב",
+    "typeHe": "תדרוך יומי",
+    "account": "U24943114"
+  },
+  "snapshot": [
+    { "labelHe": "שווי התיק", "valueHe": "$513.35", "cls": "" },
+    { "labelHe": "היום", "valueHe": "‎-2.70%‎", "cls": "neg" },
+    { "labelHe": "מתחילת החודש", "valueHe": "‎+0.94%‎", "cls": "pos" },
+    { "labelHe": "חשיפה לתמת ה-AI", "valueHe": "~79% מהתיק", "cls": "" }
+  ],
+  "leadHe": "השבוע-וחצי הקרוב הוא חלון האירועים החשוב ביותר לתיק שלך מאז שנפתח: דוחות אנבידיה ב-26/8 ואחריהם מיד כנס ג'קסון הול (27–29/8) עם הנאום הראשון של יו\"ר הפד החדש. שוק האופציות מתמחר רוגע כללי (VIX סביב 14) אבל משלם פרמיה מיוחדת בדיוק על החלון הזה. עם 60% בנאסד\"ק ועוד 19% בסנדיסק, כמעט כל התיק שלך רגיש לתוצאה — יום אדום כמו היום הוא תזכורת לכך.",
+  "holdings": [
+    {
+      "symbol": "QQQ",
+      "nameHe": "Invesco QQQ — נאסד\"ק 100",
+      "weightHe": "60.7% מהתיק",
+      "positionHe": "0.433 יח׳ · מחיר כניסה ממוצע ‎$649.80‎ · כעת ‎$719.91‎ · רווח לא ממומש ‎+$30.36 (+10.8%)‎",
+      "whatHe": "ירד היום כ-1.4% — עליית תשואות האג\"ח הארוכות והמתיחות סביב איראן מכבידות על מניות הצמיחה. עדיין ‎+19%‎ מתחילת השנה.",
+      "impactHe": "זו ההחזקה הגדולה והרווחית ביותר שלך, והיא למעשה הימור מרוכז על מגה-קאפ טכנולוגיה: אנבידיה היא הרכיב הגדול בקרן, כך שדוחות ה-26/8 הם האירוע המשפיע ביותר על התיק כולו. תרחיש דוח חזק ימשוך את רוב התיק למעלה; אכזבה תפגע גם ב-QQQ וגם בסנדיסק במקביל — אין לך כרגע פיזור שמגן על התרחיש הזה.",
+      "watchHe": "דוחות NVDA ב-26/8 אחרי הסגירה; הנאום בג'קסון הול ב-27/8; כיוון תשואות האג\"ח ל-10 שנים."
+    },
+    {
+      "symbol": "SNDK",
+      "nameHe": "סנדיסק",
+      "weightHe": "18.5% מהתיק",
+      "positionHe": "0.0568 יח׳ · נקנתה ב-17/8 ב-‎$1,760‎ (עלות כוללת ‎$1,804‎ ליח׳) · כעת ‎$1,667.87‎ · ‎-7.5%‎ מהכניסה",
+      "whatHe": "צנחה היום כ-6.7% אחרי זינוק של ‎+8.9%‎ אתמול — תנודתיות קיצונית שאופיינית למניות זיכרון. ברקע: דוח Q4 חזק ב-5/8 (הכנסות ~‎$8‎ מיליארד, צמיחה שנתית חדה בזכות ביקושי SSD ל-AI), יום משקיעים ב-13/8 שהציג טכנולוגיית פלאש חדשה ל-AI, והערת מורגן סטנלי שהמניה \"תת-מוחזקת\" על ידי מוסדיים לעומת אנבידיה הצפופה.",
+      "impactHe": "קנית בדיוק אחרי הזינוק, ולכן אתה מתחיל מהפסד נייר של כ-‎$7.7‎. התזה הבסיסית (מחזור NAND חיובי + ביקושי AI + תת-החזקה מוסדית) דווקא התחזקה — הירידה היום היא התקררות של ראלי, לא חדשות רעות על החברה. אבל שים לב: סנדיסק + QQQ ביחד הם ~79% מהתיק על אותה תמה בדיוק, אז התיק שלך תנודתי משמעותית מהשוק (ראינו זאת היום: השוק ירד ~1%, התיק ‎-2.7%‎).",
+      "watchHe": "מחירי NAND; דוחות NVDA ב-26/8 (סנטימנט הזיכרון נגרר אחריהם); הדוח הבא של סנדיסק צפוי בתחילת נובמבר."
+    },
+    {
+      "symbol": "CAT",
+      "nameHe": "קטרפילר",
+      "weightHe": "19.0% מהתיק",
+      "positionHe": "0.1145 יח׳ · נקנתה ב-17/8 ב-‎$872.77‎ (עלות כוללת ‎$894.60‎ ליח׳) · כעת ‎$852.76‎ · ‎-4.7%‎ מהכניסה",
+      "whatHe": "ירדה היום כ-3.3% עם שאר השוק, אחרי תקופה חזקה: רבעון שיא של ‎$20.5‎ מיליארד ב-4/8 בזכות ביקוש לציוד חשמל לדאטה-סנטרים של AI, והמניה נסחרה סמוך לשיא כל הזמנים.",
+      "impactHe": "זו ההחזקה ה\"מפזרת\" היחידה שלך — תעשייה במקום טכנולוגיה — אבל בפועל גם התזה שלה נשענת על בום ה-AI (חשמל לדאטה-סנטרים), אז הפיזור חלקי. נקודה חשובה לתזמון: תאריך האקס-דיבידנד האחרון היה 20/7, לפני הקנייה שלך — את הדיבידנד של 19/8 לא תקבל; הדיבידנד הראשון שלך (‎$1.63‎ ליח׳, כ-‎$0.19‎ עבורך) ייקבע באקס של אמצע אוקטובר. עליית תשואות אג\"ח, כמו היום, נוטה להכביד על מניות תעשייה בטווח הקצר.",
+      "watchHe": "אקס-דיבידנד באמצע אוקטובר; דוח Q3 צפוי סוף אוקטובר; הזמנות ציוד חשמל בהמשך מחזור הדאטה-סנטרים."
+    }
+  ],
+  "portfolioNoteHe": "שורה תחתונה לתיק: הריכוזיות בתמת ה-AI (~79%) היא המנוע וגם הסיכון המרכזי. מזומן פנוי: ‎$9.25‎ בלבד (1.8%) — אין תחמושת משמעותית לניצול ירידות אם חלון האירועים של 26–29/8 ייצר הזדמנות. אם תפקיד לפני סוף החודש, שקול לתזמן אחרי הדוחות של אנבידיה.",
+  "events": [
+    { "dateHe": "19 באוג׳", "symbol": "CAT", "eventHe": "תשלום דיבידנד רבעוני — לא רלוונטי עבורך (נקנתה אחרי האקס של 20/7)" },
+    { "dateHe": "26 באוג׳", "symbol": "NVDA", "eventHe": "דוחות אנבידיה אחרי הסגירה — האירוע המשפיע ביותר על QQQ, סנדיסק ורשימת המעקב" },
+    { "dateHe": "27–29 באוג׳", "symbol": "פד", "eventHe": "כנס ג'קסון הול — נאום ראשון של היו\"ר החדש וורש; רגיש במיוחד על רקע עליית התשואות" },
+    { "dateHe": "אמצע אוק׳", "symbol": "CAT", "eventHe": "אקס-דיבידנד — הדיבידנד הראשון שתקבל מקטרפילר (~$0.19)" },
+    { "dateHe": "סוף אוק׳", "symbol": "CAT", "eventHe": "דוח רבעון שלישי" },
+    { "dateHe": "תחילת נוב׳", "symbol": "SNDK", "eventHe": "דוח רבעון פיסקאלי ראשון 2027" }
+  ],
+  "archive": [
+    { "dateHe": "18 באוג׳ 2026", "typeHe": "יומי", "summaryHe": "התדרוך הראשון: יום אדום (התיק ‎-2.7%‎); מיפוי חלון האירועים 26–29/8 (דוחות NVDA + ג'קסון הול) והריכוזיות בתמת ה-AI." }
+  ]
+}
+</script>
+
+<div class="wrap">
+  <header>
+    <h1>🧭 תדרוך השקעות</h1>
+    <div class="sub">ניתוח השלכות ממוקד-תיק, על בסיס נתוני החשבון ב-Interactive Brokers ומחקר שוטף</div>
+    <span class="badge type" id="h-type"></span>
+    <span class="badge" id="h-updated"></span>
+    <a class="nav-link" href="investment-dashboard.html">📊 דשבורד</a>
+    <a class="nav-link" href="trade-history.html">📜 היסטוריית עסקאות</a>
+  </header>
+
+  <section class="card lead-card">
+    <h2>מה חשוב עכשיו</h2>
+    <p class="lead-text" id="lead"></p>
+    <div class="snapshot" id="snapshot"></div>
+  </section>
+
+  <div id="holdings"></div>
+
+  <section class="card" id="portfolio-note-card">
+    <h2>מבט-על על התיק</h2>
+    <p style="font-size:14px;color:var(--text-secondary)" id="portfolio-note"></p>
+  </section>
+
+  <section class="card">
+    <h2>אירועים צפויים <span class="note">מה שעשוי להזיז את התיק</span></h2>
+    <table>
+      <thead><tr><th>מתי</th><th>מי</th><th>מה ולמה זה חשוב לך</th></tr></thead>
+      <tbody id="events-body"></tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>ארכיון תדרוכים</h2>
+    <div id="archive"></div>
+  </section>
+
+  <footer>
+    התדרוך נכתב אוטומטית על בסיס נתוני החשבון ומקורות שוק פומביים. למטרות מידע בלבד — אינו ייעוץ השקעות.
+  </footer>
+</div>
+
+<script>
+(function () {
+  var D = JSON.parse(document.getElementById('brief-data').textContent);
+
+  document.getElementById('h-type').textContent = D.meta.typeHe;
+  document.getElementById('h-updated').textContent = 'עודכן: ' + D.meta.updatedHe;
+  document.getElementById('lead').textContent = D.leadHe;
+
+  document.getElementById('snapshot').innerHTML = D.snapshot.map(function (c) {
+    return '<span class="chip">' + c.labelHe + ': <b class="' + (c.cls || '') + '">' + c.valueHe + '</b></span>';
+  }).join('');
+
+  document.getElementById('holdings').innerHTML = D.holdings.map(function (h) {
+    return '<section class="card h-card">' +
+      '<div class="h-head"><span class="sym">' + h.symbol + '</span>' +
+      '<span class="nm">' + h.nameHe + '</span>' +
+      '<span class="w">' + h.weightHe + '</span></div>' +
+      '<div class="h-pos">' + h.positionHe + '</div>' +
+      '<div class="h-block"><span class="lbl what">מה קרה</span><p>' + h.whatHe + '</p></div>' +
+      '<div class="h-block"><span class="lbl impact">ההשלכה עליך</span><p>' + h.impactHe + '</p></div>' +
+      '<div class="h-block"><span class="lbl watch">מה לעקוב</span><p>' + h.watchHe + '</p></div>' +
+      '</section>';
+  }).join('');
+
+  document.getElementById('portfolio-note').textContent = D.portfolioNoteHe;
+
+  document.getElementById('events-body').innerHTML = D.events.map(function (e) {
+    return '<tr><td class="date">' + e.dateHe + '</td>' +
+      '<td class="ev-sym">' + e.symbol + '</td>' +
+      '<td style="font-size:13.5px;color:var(--text-secondary)">' + e.eventHe + '</td></tr>';
+  }).join('');
+
+  document.getElementById('archive').innerHTML = D.archive.map(function (a) {
+    return '<div class="archive-item"><span class="d">' + a.dateHe + '</span>' +
+      '<span class="t">' + a.typeHe + '</span>' +
+      '<span class="s">' + a.summaryHe + '</span></div>';
+  }).join('');
+})();
+</script>
+</body>
+</html>
